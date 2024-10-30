@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">lista</string>
+    <string name="screen_new_item_etTitle">Título</string>
+    <string name="screen_new_item_etDesc">Descrição</string>
+    <string name="screen_new_item_btnAddItem">ADICIONAR ITEM</string>
+    <string name="textview">TextView</string>
+    <string name="contentDesc_item_list">Image do item</string>
+    <string name="fab_icon_main_activity">Fab Icon</string>
 </resources>
