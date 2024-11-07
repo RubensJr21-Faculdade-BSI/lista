@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -17,13 +16,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
+
+import java.util.Objects;
 
 import junior.correa.nascimento.rubens.lista.R;
+import junior.correa.nascimento.rubens.lista.model.NewItemActivityViewModel;
 
 public class NewItemActivity extends AppCompatActivity {
 
     static int PHOTO_PICKER_REQUEST = 1;
-    Uri photoSelected = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,48 +37,60 @@ public class NewItemActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        NewItemActivityViewModel vm = new ViewModelProvider( this ).get(NewItemActivityViewModel.class );
+
+        /*
+        * Para o caso de a tela estar sendo reconstruída após uma rotação por exemplo
+        * é necessário preencher o "source" do elemento de preview da imagem, pois pela implementação
+        * padrão, ele não consegue lidar com ciclo de vida da aplicação, ao contrário do faz as caixas de texto
+        * */
+        Uri selectPhotoLocation = vm.getSelectPhotoLocation();
+        if(selectPhotoLocation != null) {
+            ImageView imvfotoPreview = findViewById(R.id.imvfotoPreview);
+            imvfotoPreview.setImageURI(selectPhotoLocation);
+        }
+
         ImageButton imgCI = findViewById(R.id.imbCI);
-        imgCI.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent photoPickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                photoPickerIntent.setType("image/*");
-                startActivityForResult(photoPickerIntent, PHOTO_PICKER_REQUEST);
-            }
+
+        imgCI.setOnClickListener(v -> {
+            Intent photoPickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            photoPickerIntent.setType("image/*");
+            //noinspection deprecation
+            startActivityForResult(photoPickerIntent, PHOTO_PICKER_REQUEST);
         });
 
         Button btnAddItem = findViewById(R.id.btnAddItem);
 
-        btnAddItem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        btnAddItem.setOnClickListener(v -> {
 
-                if (photoSelected == null) {
-                    Toast.makeText(NewItemActivity.this, "É necessário selecionar uma imagem!", Toast.LENGTH_LONG).show();
-                    return;
-                }
+            Uri selectPhotoLocation1 = vm.getSelectPhotoLocation();
 
-                EditText etTitle = findViewById(R.id.etTitle);
-                String title = etTitle.getText().toString();
-                if (title.isEmpty()) {
-                    Toast.makeText(NewItemActivity.this, "É necessário inserir um título", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                EditText etDesc = findViewById(R.id.etDesc);
-                String description = etDesc.getText().toString();
-                if (description.isEmpty()) {
-                    Toast.makeText(NewItemActivity.this, "É necessário inserir uma descrição", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                Intent i = new Intent();
-                i.setData(photoSelected);
-                i.putExtra("title", title);
-                i.putExtra("description", description);
-                setResult(Activity.RESULT_OK, i);
-                finish();
+            if (selectPhotoLocation1 == null) {
+                Toast.makeText(NewItemActivity.this, "É necessário selecionar uma imagem!", Toast.LENGTH_LONG).show();
+                return;
             }
+
+            EditText etTitle = findViewById(R.id.etTitle);
+            String title = etTitle.getText().toString();
+            if (title.isEmpty()) {
+                Toast.makeText(NewItemActivity.this, "É necessário inserir um título", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            EditText etDesc = findViewById(R.id.etDesc);
+            String description = etDesc.getText().toString();
+            if (description.isEmpty()) {
+                Toast.makeText(NewItemActivity.this, "É necessário inserir uma descrição", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            Intent i = new Intent();
+            i.setData(selectPhotoLocation1);
+            i.putExtra("title", title);
+            i.putExtra("description", description);
+            setResult(Activity.RESULT_OK, i);
+            finish();
         });
 
     }
@@ -93,9 +107,11 @@ public class NewItemActivity extends AppCompatActivity {
         */
         if(requestCode == PHOTO_PICKER_REQUEST) {
             if(resultCode == Activity.RESULT_OK) {
-                photoSelected = data.getData();
+                Uri photoSelected = Objects.requireNonNull(data).getData();
                 ImageView imvfotoPreview = findViewById(R.id.imvfotoPreview);
                 imvfotoPreview.setImageURI(photoSelected);
+                NewItemActivityViewModel vm = new ViewModelProvider(this).get(NewItemActivityViewModel.class);
+                vm.setSelectPhotoLocation(photoSelected);
             }
         }
     }

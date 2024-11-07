@@ -15,8 +15,8 @@ import junior.correa.nascimento.rubens.lista.R;
 import junior.correa.nascimento.rubens.lista.activity.MainActivity;
 import junior.correa.nascimento.rubens.lista.model.MyItem;
 
+/** @noinspection rawtypes*/
 public class MyAdapter extends RecyclerView.Adapter {
-
     MainActivity mainActivity;
     List<MyItem> itens;
 
@@ -28,7 +28,9 @@ public class MyAdapter extends RecyclerView.Adapter {
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // A classe LayoutInflater é usada para transformar arquivos xml em objetos de view
         LayoutInflater inflater = LayoutInflater.from(mainActivity);
+        // Aqui nós inflamos o layout item_list.xml em um objeto view
         View v = inflater.inflate(R.layout.item_list, parent, false);
         return new MyViewHolder(v);
     }
@@ -40,7 +42,7 @@ public class MyAdapter extends RecyclerView.Adapter {
         View v = holder.itemView;
 
         ImageView imvfoto = v.findViewById(R.id.imvfoto);
-        imvfoto.setImageURI(myItem.photo);
+        imvfoto.setImageBitmap(myItem.photo);
 
         TextView tvTitle = v.findViewById(R.id.tvTitle);
         tvTitle.setText(myItem.title);
